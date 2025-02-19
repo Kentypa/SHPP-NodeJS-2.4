@@ -4,16 +4,27 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "tsx watch src/backend/server.ts | vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@reduxjs/toolkit": "^2.5.1",
+    "@types/body-parser": "^1.19.5",
+    "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
+    "@types/node": "^22.13.4",
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
     "express": "^4.21.2",
+    "fs": "0.0.1-security",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-query": "^3.39.3",
+    "react-redux": "^9.2.0",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.19.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
