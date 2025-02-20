@@ -48,13 +48,13 @@ app.put("/api/v1/items", (req, res) => {
 });
 
 app.delete("/api/v1/items", (req, res) => {
-  const item = items.items.find((value) => value.id === req.body.id);
+  const index = items.items.findIndex((value) => value.id === req.body.id);
 
-  if (item) {
-    items.items.splice(item.id, 1);
+  if (index !== -1) {
+    items.items.splice(index, 1);
     res.json({ ok: true });
   } else {
-    res.json({ ok: false });
+    res.status(404).json({ ok: false, error: "Task not found" });
   }
 });
 

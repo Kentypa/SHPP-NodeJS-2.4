@@ -1,30 +1,103 @@
-import React from "react";
+import React, { useState } from "react";
+import { useMutation, useQueryClient } from "react-query";
+import { Item } from "../../types/item.ts";
 
-export const Task: React.FC = () => {
+type TaskProps = {
+  task: Item;
+  index: number;
+  removeTask: (id: number) => Promise<any>;
+  changeTask: (task: Item) => Promise<any>;
+};
+
+export const Task: React.FC<TaskProps> = ({
+  removeTask,
+  changeTask,
+  task,
+  index,
+}) => {
+  const { id, text, checked } = task;
+
+  const [editable, setEditable] = useState(false);
+  const [value, setValue] = useState<string>(text);
+
+  const queryClient = useQueryClient();
+
+  const changeMutation = useMutation({
+    mutationFn: changeTask,
+    onSuccess: () => {
+      queryClient.invalidateQueries("items");
+    },
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: removeTask,
+    onSuccess: () => {
+      queryClient.invalidateQueries("items");
+    },
+  });
+
   return (
-    <div className="task" v-bind:class="{ taskCompleted: data.checked}">
-      {/*        <div className="contentText">*/}
-      {/*          <div>*/}
-      {/*            <button onClick={()=>{"@click=\"$emit('task_done')\""}} class="task_done taskButton">*/}
-      {/*            <span v-if="!data.checked" style="color: rgba(0,0,0,.28);"> ☐ </span>*/}
-      {/*            <span v-else style="color: #27ae60"> ☑ </span>*/}
-      {/*          </button>*/}
-      {/*          <span class="task_content" v-if="!data.editable">*/}
-      {/*                    {{index}}. {{data.text}}*/}
-      {/*                </span>*/}
-      {/*          <span v-else>*/}
-      {/*                    {{index}}. <input @keyup.enter="$emit('save')" v-model="data.inputedit" autofocus class="edit-input"/>*/}
-      {/*                </span>*/}
-      {/*        </div>*/}
-      {/*        <div class="button check" v-if="!data.editable">*/}
-      {/*          <button onClick={()=>{"@click=\"$emit('task_edit')\""}} className="color: #eca81a;"> ✎️ </button>*/}
-      {/*        <button onClick={()=>{`"@click="$emit('task_del')""`}} className="color: #cd1537;"> ✕ </button>*/}
-      {/*</div>*/}
-      {/*  <div v-else>*/}
-      {/*    <button onClick={()=>{"@click=\"$emit('save')\""}}> 💾 </button>*/}
-      {/*  <button onClick={()=>{"@click=\"$emit('disable')"}}> ✕ </button>*/}
-      {/*</div>*/}
-      {/*</div>*/}
+    <div className={checked ? "task taskCompleted" : "task"}>
+      <div className="contentText">
+        <button
+          onClick={() => changeMutation.mutate({ ...task, checked: !checked })}
+          className="task_done taskButton"
+        >
+          {checked ? (
+            <span style={{ color: "#27ae60" }}> ☑ </span>
+          ) : (
+            <span style={{ color: "rgba(0, 0, 0, 0.28)" }}> ☐ </span>
+          )}
+        </button>
+
+        {!editable ? (
+          <span className="task_content">
+            {index}. {text}
+          </span>
+        ) : (
+          <input
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                changeMutation.mutate({ ...task, text: value });
+                setEditable(false);
+              }
+            }}
+            autoFocus
+            className="edit-input"
+          />
+        )}
+
+        {!editable ? (
+          <div className="button check">
+            <button
+              onClick={() => setEditable(true)}
+              style={{ color: "#eca81a" }}
+            >
+              ✎️
+            </button>
+            <button
+              onClick={() => removeMutation.mutate(id)}
+              style={{ color: "#cd1537" }}
+            >
+              ✕
+            </button>
+          </div>
+        ) : (
+          <div>
+            <button
+              onClick={() => {
+                changeMutation.mutate({ ...task, text: value });
+                setEditable(false);
+              }}
+            >
+              💾
+            </button>
+            <button onClick={() => setEditable(false)}>✕</button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
