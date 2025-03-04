@@ -1,16 +1,16 @@
-import { createSlice } from "@reduxjs/toolkit";
-import type { PayloadAction } from "@reduxjs/toolkit";
+import { createSlice } from '@reduxjs/toolkit';
+import type { PayloadAction } from '@reduxjs/toolkit';
 
 export type routeURL = {
   url: string;
 };
 
 const initialState: routeURL = {
-  url: "",
+  url: '',
 };
 
 export const routeUrlSlice = createSlice({
-  name: "routeUrl",
+  name: 'routeUrl',
   initialState,
   reducers: {
     setRouteUrl: (state, action: PayloadAction<string>) => {
