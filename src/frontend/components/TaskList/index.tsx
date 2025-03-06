@@ -14,20 +14,17 @@ type TasksListProps = {
 export const TasksList: React.FC<TasksListProps> = ({ setStep }) => {
   const [value, setValue] = useState<string>('');
   const queryClient = useQueryClient();
-  const { data, isSuccess, isLoading, isError, error } = useQuery<Items>({
-    queryKey: 'items',
-    queryFn: getTasks,
-  });
-
   const url = useSelector(routeUrlSelector).url;
   const apiUrl = useSelector(apiUrlSelector).url;
 
-  const apiVersion = url.search('v2') !== -1 ? 'v2' : 'v1';
+  const apiVersion = url.includes('v2') ? 'v2' : 'v1';
 
   function logout() {
     const route = apiVersion === 'v1' ? '/logout' : '/router';
+    const qs = { action: apiVersion === 'v1' ? '' : 'logout' };
+    const totallyRoute = apiUrl + apiVersion + route + '?' + new URLSearchParams(qs);
 
-    fetch(apiUrl + apiVersion + route, {
+    fetch(totallyRoute, {
       method: 'POST',
       credentials: 'include',
     })
@@ -40,8 +37,49 @@ export const TasksList: React.FC<TasksListProps> = ({ setStep }) => {
       });
   }
 
+  async function getTasks(): Promise<Items> {
+    const route = apiVersion === 'v1' ? '/items' : '/router';
+    const qs = { action: apiVersion === 'v1' ? '' : 'getItems' };
+    const totallyRoute = apiUrl + apiVersion + route + '?' + new URLSearchParams(qs);
+
+    const response = await fetch(totallyRoute, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      mode: 'cors',
+      credentials: 'include',
+    });
+
+    return response.json();
+  }
+
+  async function addTask(task: string) {
+    const route = apiVersion === 'v1' ? '/items' : '/router';
+    const qs = { action: apiVersion === 'v1' ? '' : 'addItem' };
+    const totallyRoute = apiUrl + apiVersion + route + '?' + new URLSearchParams(qs);
+
+    const response = await fetch(totallyRoute, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({ text: task }),
+      mode: 'cors',
+      credentials: 'include',
+    });
+
+    return response.json();
+  }
+
   async function changeTask(task: Item) {
-    const response = await fetch(url, {
+    const route = apiVersion === 'v1' ? '/items' : '/router';
+    const qs = { action: apiVersion === 'v1' ? '' : 'editItem' };
+    const totallyRoute = apiUrl + apiVersion + route + '?' + new URLSearchParams(qs);
+
+    const response = await fetch(totallyRoute, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -56,7 +94,11 @@ export const TasksList: React.FC<TasksListProps> = ({ setStep }) => {
   }
 
   async function removeTask(id: string) {
-    const response = await fetch(url, {
+    const route = apiVersion === 'v1' ? '/items' : '/router';
+    const qs = { action: apiVersion === 'v1' ? '' : 'deleteItem' };
+    const totallyRoute = apiUrl + apiVersion + route + '?' + new URLSearchParams(qs);
+
+    const response = await fetch(totallyRoute, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -70,34 +112,10 @@ export const TasksList: React.FC<TasksListProps> = ({ setStep }) => {
     return response.json();
   }
 
-  async function addTask(task: string) {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify({ text: task }),
-      mode: 'cors',
-      credentials: 'include',
-    });
-
-    return response.json();
-  }
-
-  async function getTasks(): Promise<Items> {
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      mode: 'cors',
-      credentials: 'include',
-    });
-
-    return response.json();
-  }
+  const { data, isSuccess, isLoading, isError, error } = useQuery<Items>({
+    queryKey: 'items',
+    queryFn: getTasks,
+  });
 
   const mutation = useMutation({
     mutationFn: addTask,
@@ -126,7 +144,7 @@ export const TasksList: React.FC<TasksListProps> = ({ setStep }) => {
       {isSuccess &&
         data.items.map((item, index) => (
           <Task
-            key={item.text}
+            key={item.id}
             task={item}
             index={index + 1}
             changeTask={changeTask}

@@ -34,11 +34,15 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 };
 
 export const logout = (req: Request, res: Response): void => {
-  req.session.destroy((err) => {
-    if (err) {
-      return res.status(500).json({ ok: false, error: 'Logout failed' });
-    }
-    res.clearCookie('connect.sid');
-    res.json({ ok: true });
-  });
+  try {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ ok: false, error: 'Logout failed' });
+      }
+      res.clearCookie('connect.sid');
+      res.json({ ok: true });
+    });
+  } catch {
+    res.status(500).json({ error: `Internal server error` });
+  }
 };
