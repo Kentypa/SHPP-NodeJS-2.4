@@ -4,11 +4,19 @@ Realization of TODO-List
 
 ## Installation
 
-Use the package manager [pnpm](https://pnpm.io/ru/) to install all dependencies.
+Clone repository and use the package manager [pnpm](https://pnpm.io/ru/) to install all dependencies.
 
 ```bash
 pnpm install
 ```
+
+Install [MongoDB](https://www.mongodb.com/) on the PC and start it on the
+
+```bash
+http://localhost:27017/
+```
+
+Make a new database with name "shpp-todo-app"
 
 ## Usage
 
