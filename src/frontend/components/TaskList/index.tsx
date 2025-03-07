@@ -1,17 +1,18 @@
-import React, { useState } from 'react';
+import { FC, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { Items } from '../../../types/items.ts';
 import { Task } from '../Task';
-import { Item } from '../../../types/item.ts';
-import { routeUrlSelector } from '../../features/routeUrl/routeUrlSelector.ts';
-import { apiUrlSelector } from '../../features/apiUrl/apiUrlSelector.ts';
+import { routeUrlSelector } from '../../store/routeUrl/routeUrlSelector.ts';
+import { apiUrlSelector } from '../../store/apiUrl/apiUrlSelector.ts';
+import { tasksService } from '../../services/tasksService.ts';
+import { authService } from '../../services/authService.ts';
 
 type TasksListProps = {
   setStep: (step: string) => void;
 };
 
-export const TasksList: React.FC<TasksListProps> = ({ setStep }) => {
+export const TasksList: FC<TasksListProps> = ({ setStep }) => {
   const [value, setValue] = useState<string>('');
   const queryClient = useQueryClient();
   const url = useSelector(routeUrlSelector).url;
@@ -19,98 +20,8 @@ export const TasksList: React.FC<TasksListProps> = ({ setStep }) => {
 
   const apiVersion = url.includes('v2') ? 'v2' : 'v1';
 
-  function logout() {
-    const route = apiVersion === 'v1' ? '/logout' : '/router';
-    const qs = { action: apiVersion === 'v1' ? '' : 'logout' };
-    const totallyRoute = apiUrl + apiVersion + route + '?' + new URLSearchParams(qs);
-
-    fetch(totallyRoute, {
-      method: 'POST',
-      credentials: 'include',
-    })
-      .then((res) => res.json())
-      .then((response) => {
-        if (response.ok) {
-          localStorage.clear();
-          setStep('login');
-        }
-      });
-  }
-
-  async function getTasks(): Promise<Items> {
-    const route = apiVersion === 'v1' ? '/items' : '/router';
-    const qs = { action: apiVersion === 'v1' ? '' : 'getItems' };
-    const totallyRoute = apiUrl + apiVersion + route + '?' + new URLSearchParams(qs);
-
-    const response = await fetch(totallyRoute, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      mode: 'cors',
-      credentials: 'include',
-    });
-
-    return response.json();
-  }
-
-  async function addTask(task: string) {
-    const route = apiVersion === 'v1' ? '/items' : '/router';
-    const qs = { action: apiVersion === 'v1' ? '' : 'addItem' };
-    const totallyRoute = apiUrl + apiVersion + route + '?' + new URLSearchParams(qs);
-
-    const response = await fetch(totallyRoute, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify({ text: task }),
-      mode: 'cors',
-      credentials: 'include',
-    });
-
-    return response.json();
-  }
-
-  async function changeTask(task: Item) {
-    const route = apiVersion === 'v1' ? '/items' : '/router';
-    const qs = { action: apiVersion === 'v1' ? '' : 'editItem' };
-    const totallyRoute = apiUrl + apiVersion + route + '?' + new URLSearchParams(qs);
-
-    const response = await fetch(totallyRoute, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify(task),
-      mode: 'cors',
-      credentials: 'include',
-    });
-
-    return response.json();
-  }
-
-  async function removeTask(id: string) {
-    const route = apiVersion === 'v1' ? '/items' : '/router';
-    const qs = { action: apiVersion === 'v1' ? '' : 'deleteItem' };
-    const totallyRoute = apiUrl + apiVersion + route + '?' + new URLSearchParams(qs);
-
-    const response = await fetch(totallyRoute, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify({ id: id }),
-      mode: 'cors',
-      credentials: 'include',
-    });
-
-    return response.json();
-  }
+  const { addTask, changeTask, getTasks, removeTask } = tasksService(apiVersion, apiUrl);
+  const { logout } = authService(apiUrl, apiVersion);
 
   const { data, isSuccess, isLoading, isError, error } = useQuery<Items>({
     queryKey: 'items',
@@ -155,7 +66,9 @@ export const TasksList: React.FC<TasksListProps> = ({ setStep }) => {
       {isError && <h3>Error: {error instanceof Error ? error.message : 'Unknown error'}</h3>}
       <hr />
       <button
-        onClick={logout}
+        onClick={() => {
+          logout(setStep);
+        }}
         className='logout'
       >
         Выйти

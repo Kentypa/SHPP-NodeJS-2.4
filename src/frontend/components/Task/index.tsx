@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { FC, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { Item } from '../../../types/item.ts';
 
@@ -9,7 +9,7 @@ type TaskProps = {
   changeTask: (task: Item) => Promise<void>;
 };
 
-export const Task: React.FC<TaskProps> = ({ removeTask, changeTask, task, index }) => {
+export const Task: FC<TaskProps> = ({ removeTask, changeTask, task, index }) => {
   const { id, text, checked } = task;
 
   const [editable, setEditable] = useState(false);

@@ -1,6 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
-import apiUrlReducer from './frontend/features/apiUrl/apiUrlSlice';
-import routeUrlReducer from './frontend/features/routeUrl/routeUrlSlice';
+import apiUrlReducer from './frontend/store/apiUrl/apiUrlSlice';
+import routeUrlReducer from './frontend/store/routeUrl/routeUrlSlice';
 
 export const store = configureStore({
   reducer: {

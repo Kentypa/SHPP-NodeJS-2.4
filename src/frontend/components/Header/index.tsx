@@ -1,6 +1,6 @@
-import * as React from 'react';
+import { FC } from 'react';
 
-export const Header: React.FC = () => {
+export const Header: FC = () => {
   return (
     <header className='header'>
       <h1 className='logo'>

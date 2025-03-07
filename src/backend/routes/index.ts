@@ -6,23 +6,21 @@ import { routerHandler } from '../config/routes';
 
 const router = Router();
 
-router.all('/api/v2/router', (req, res, next) => {
+router.all('/api/v2/router', (req, res) => {
   const action = req.query.action as string;
 
   if (!routerHandler[action]) {
     res.status(404).json({ error: `Action '${action}' not found` });
   }
 
-  routerHandler[action]
-    .reduce((prev, handler) => {
-      return prev.then(
-        () =>
-          new Promise((resolve, reject) => {
-            handler(req, res, (err) => (err ? reject(err) : resolve()));
-          }),
-      );
-    }, Promise.resolve())
-    .catch(next);
+  Promise.all(
+    routerHandler[action].map(
+      (handler) =>
+        new Promise<void>((resolve, reject) => {
+          handler(req, res, (err) => (err ? reject(err) : resolve()));
+        }),
+    ),
+  );
 });
 
 router.post('/api/v1/register', register);
